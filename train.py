@@ -16,9 +16,11 @@ from configs import config, dirs
 
 """
 Todo
+- Analisar os filtros finais para ver o q é q eles consideram + positivo e + negativo ?
 - Test
 - Output backups with proper model information -> Allow multiple runs at the same time !!
-- Randomize training set order 
+- Randomize training set order -> Important? They've already divided into test/train/dev
+- Not using dev anywhere
 
 - Fix softmax warning
 - Investigate .long() thing
@@ -70,7 +72,6 @@ if pipeline['ImportGlove']:
     word2Id = pickle.load(open(config['outputDictionary'], 'rb'))       # Indexed by word: wordId
     assert(len(vectors) == len(words))
     glove = {w: vectors[word2Id[w]] for w in words}                     # Indexed by word: embedding
-    # todo pretty sure we can delete the previous 3 vectors
 
     # print(vectors[:2])
     # print(words[:10])
@@ -80,76 +81,13 @@ if pipeline['ImportGlove']:
 if pipeline['ProcessStandford']:
     print("> Going through standford trees...")
 
-    # Train, Test, Dev datasets
     dataset = pytreebank.load_sst(dirs['trees'])
     trainingSet = dataset["train"]
-
-    """
-        # Nº de linhas nos respetivos ficheiros
-        example = dataset["train"][0]
-
-        print(len(dataset["train"]))                # 8544 
-        print(len(dataset["test"]))                 # 2210
-        print(len(dataset["dev"]))                  # 1101
-
-        # Possiveis combinações das palavras nas frases? Is that it?
-
-        print(len(dataset["train"][0].to_lines()))  # 71
-        print(len(dataset["train"][1].to_lines()))  # 73
-        print(len(dataset["train"][2].to_lines()))  # 77
-
-        print(len(dataset["test"][0].to_lines()))   # 7
-        print(len(dataset["test"][1].to_lines()))   # 41
-        print(len(dataset["test"][2].to_lines()))   # 45
-
-        print(len(dataset["dev"][0].to_lines()))    # 25
-        print(len(dataset["dev"][1].to_lines()))    # 25
-        print(len(dataset["dev"][2].to_lines()))    # 47
-        """
 
     # Transform each phrase for a sequence of IDs and to torch format
     print("> Transforming phrases into sequence of IDs")
     trainingData, trainingLabels = utils.transformPhrasesIntoSeqOfId(trainingSet, word2Id)
-    # todo Maybe i'm missing an unsqueeze here
-    """
-    nonIgnored = 0
-    ignored = 0
-    biggestPhraseLen = 0
-    origNumOfPhrases = 0
-    trainingLabelsAux = []
-    for phraseSet in trainingSet:
-        phraseSet.lowercase()   # to lowercase
-        for it, (label, sentence) in enumerate(phraseSet.to_labeled_lines()):
-
-            '''print("%s has sentiment label %s" % (
-                sentence,
-                ["very negative", "negative", "neutral", "positive", "very positive"][label]
-            ))'''
-            origNumOfPhrases += 1
-            newSentence = []
-            for w in sentence.split():  # todo splitting by spaces not sure if best choice
-                if w in word2Id:
-                    newSentence.append(word2Id[w])
-                    nonIgnored += 1
-                else:
-                    ignored += 1
-            if len(newSentence) is not 0:
-                newTrainingSet.append(newSentence)
-                trainingLabelsAux.append(label)
-
-                if len(newSentence) > biggestPhraseLen:
-                    biggestPhraseLen = len(newSentence)
-
-    # Transform to torch format
-    trainingLabels = torch.tensor(trainingLabelsAux)
-    trainingData = torch.zeros(len(newTrainingSet), biggestPhraseLen, dtype=torch.int32)
-    for it, data in enumerate(newTrainingSet):
-        paddedData = (data + biggestPhraseLen*[0])[:biggestPhraseLen]        # Only adding zeros to the end of the arr
-        # Careful because there's one word which already has ID 0
-        trainingData[it] = torch.Tensor(paddedData)
-
-    assert(trainingData.shape[0] == trainingLabels.shape[0])
-    """
+    # todo not really important since i do it after the import but maybe i'm missing an unsqueeze here
 
     # Save for future usage
     torch.save(trainingData, config['outputTrainingSet'])
@@ -163,8 +101,6 @@ if pipeline['ImportStandford']:
 
 if pipeline['Train']:
     # Build embeddings matrix based on the dictionary
-    # fixme - this can be put into ProcessGlove
-    # fixme - Dont know where the dictionary is yet, this is just converting from NP to torch
 
     print('> Building embeddings matrix in pytorch format')
     numKnownWords = len(vectors)

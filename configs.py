@@ -23,6 +23,7 @@ dirs = {
     'gloveOutput': 'gloveOutput',
     'standfordOutput': 'trashDirectory',
     'modelOutput': 'modelOutput',
+    # 'modelOutput': 'modelSecondOutput',
 }
 
 config = {

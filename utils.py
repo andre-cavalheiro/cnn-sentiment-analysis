@@ -12,7 +12,7 @@ def transformPhrasesIntoSeqOfId(set, word2Id):
         phraseSet.lowercase()  # to lowercase
         for it, (label, sentence) in enumerate(phraseSet.to_labeled_lines()):
 
-            """print("%s has sentiment label %s" % (
+            """print("%s has senti\ment label %s" % (
                 sentence,
                 ["very negative", "negative", "neutral", "positive", "very positive"][label]
             ))"""
@@ -27,11 +27,10 @@ def transformPhrasesIntoSeqOfId(set, word2Id):
             if len(newSentence) is not 0:
                 newSet.append(newSentence)
                 setLabelsAux.append(label)
-
                 if len(newSentence) > biggestPhraseLen:
                     biggestPhraseLen = len(newSentence)
 
-    print('- Number of phrases went from ' + str(origNumOfPhrases) + ' to ' + str(len(set)))
+    print('- Number of phrases went from ' + str(origNumOfPhrases) + ' to ' + str(len(newSet)))
     print('- Ignored ' + str(ignored) + ' words (out of dictionary).')
     print('- Recognized ' + str(nonIgnored) + ' words.')
     print('- Biggest phrase has ' + str(biggestPhraseLen) + ' words.')
