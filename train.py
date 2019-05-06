@@ -45,7 +45,7 @@ if pipeline['ProcessGlove']:
     vectors = []
     words = []
     word2Id = {}
-    idx = 0
+    idx = 1     # Must start at 1, so we can apply padding  # fixme
     print("> Going through Glove file...")
     with open(config['embeddingsFile'], 'rb') as f:
         for l in f:
@@ -71,7 +71,7 @@ if pipeline['ImportGlove']:
     words = pickle.load(open(config['outputDictionaryToID'], 'rb'))     # Indexed by wordId: word
     word2Id = pickle.load(open(config['outputDictionary'], 'rb'))       # Indexed by word: wordId
     assert(len(vectors) == len(words))
-    glove = {w: vectors[word2Id[w]] for w in words}                     # Indexed by word: embedding
+    glove = {w: vectors[word2Id[w]-1] for w in words}                     # Indexed by word: embedding
 
     # print(vectors[:2])
     # print(words[:10])
@@ -120,7 +120,7 @@ if pipeline['Train']:
     trainingData = torch.utils.data.DataLoader(trainingData, batch_size=config['batchSize'])
 
     model = Net(embedding_dim=config['embeddingSize'], knownEmbeddings=embeddings,
-                layersConfig=config['modelConfig']).to(config['device'])
+                layersConfig=config['modelConfig'], hiddenSize=config['hiddenSize']).to(config['device'])
 
     optimizer = optim.SGD(model.parameters(), lr=config['learningRate'], momentum=config['momentum'],
                           weight_decay=config['weightDecay'])
@@ -143,7 +143,7 @@ if pipeline['Train']:
             target = target.view((config['batchSize'],))
             optimizer.zero_grad()
             output = model(data.long())
-            # todo, the training instances should be already saved as long instead of changed here
+            # todo, the training instances should be already saved as 'long' instead of changed here
             # todo, also investigate if this does not affect the results
             # print(output.shape)
             # print(target.shape)

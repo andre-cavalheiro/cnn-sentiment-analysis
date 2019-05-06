@@ -21,7 +21,8 @@ dirs = {
     'standford': os.path.join('data', 'standfordSentimentTreebank'),
     'trees': os.path.join('data', 'trees'),
     'gloveOutput': 'gloveOutput',
-    'standfordOutput': 'trashDirectory',
+    # 'standfordOutput': 'trashDirectory',
+    'standfordOutput': 'standfordOutput',
     'modelOutput': 'modelOutput',
     # 'modelOutput': 'modelSecondOutput',
 }
@@ -44,6 +45,7 @@ config = {
     'learningRate': 0.01,
     'momentum': 0.9,
     'weightDecay': 0.001,
+    'hiddenSize': 256,
     'modelConfig': [{
             'inChan': 1,
             'outChan': 128,

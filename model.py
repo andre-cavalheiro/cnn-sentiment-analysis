@@ -29,11 +29,13 @@ class concat(nn.Module):
         return new_x
 
 class Net(nn.Module):
-    def __init__(self, embedding_dim=300, knownEmbeddings=[], layersConfig=[]):
+    def __init__(self, embedding_dim=300, knownEmbeddings=[], layersConfig=[], hiddenSize=256, dropOutRate=0.2):
         super(Net, self).__init__()
         self.embeddings = initEmbeddingLayer(knownEmbeddings, False)
         self.concatEmbed = concat()
         self.layers = []
+
+        # The convulsion layers are defined by the passed parameters
         mul = 1
         for it, conf in enumerate(layersConfig):
             if it is len(layersConfig)-1:
@@ -44,7 +46,12 @@ class Net(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool1d(embedding_dim*mul),
             ))
-        self.lin = nn.Linear(layersConfig[len(layersConfig)-1]['outChan'], 5)  # Number of sentiments(classes) possible
+
+        self.lin1 = nn.Linear(layersConfig[len(layersConfig)-1]['outChan'], hiddenSize)
+
+        self.lin2 = nn.Linear(hiddenSize, 5)  # Number of sentiments(classes) possible
+
+        self.drop_layer = nn.Dropout(p=dropOutRate)
 
     def forward(self, x):
         # print("> Forward embed:")
@@ -56,8 +63,13 @@ class Net(nn.Module):
             out = layer(out)
         # print("> Forward reshape:")
         out = out.reshape(out.size(0), -1)
+
+        # print("> Forward Relu:")
+        out = F.relu(self.lin1(out))
         # print("> Forward softmax:")
-        out = F.softmax(self.lin(out))
+        out = F.softmax(self.lin2(out))
+        # print("> Dropout:")
+        out = self.drop_layer(out)
         # print("> Forward done")
         return out
 
