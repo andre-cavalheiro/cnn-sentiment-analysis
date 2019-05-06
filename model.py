@@ -3,15 +3,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def initEmbeddingLayer(embeddings, trainable):
-    numEmbed = embeddings.shape[0]
-    dimEmbed = embeddings.shape[1]
-    print('> Initializing embedding layer for ' + str(numEmbed) + ' embeddings with size ' + str(dimEmbed))
+def initEmbeddingLayer(embeddings, trainable, vocabSize=400000):
+    if embeddings is not None:
+        numEmbed = embeddings.shape[0]
+        dimEmbed = embeddings.shape[1]
+        print('> Initializing embedding layer for ' + str(numEmbed) + ' embeddings with size ' + str(dimEmbed))
 
-    layer = nn.Embedding(num_embeddings=numEmbed, embedding_dim=dimEmbed)
-    layer.load_state_dict({'weight': embeddings})  # Load known embeddings
-    if not trainable:
-        layer.weight.requires_grad = False
+        layer = nn.Embedding(num_embeddings=numEmbed, embedding_dim=dimEmbed)
+        layer.load_state_dict({'weight': embeddings})  # Load known embeddings
+        if not trainable:
+            layer.weight.requires_grad = False
+    else:
+        layer = nn.Embedding(num_embeddings=vocabSize, embedding_dim=300)
+
 
     return layer
 
@@ -22,14 +26,14 @@ class concat(nn.Module):
     def forward(self, x):
         new_x = torch.Tensor(x.shape[0], 1, x.shape[1]*x.shape[2])  # 1 because num_in_chanels
         for it1, trainingInst in enumerate(x):
-            aux = torch.Tensor()
+            newInstance = torch.Tensor()
             for it2, wID in enumerate(trainingInst):
-                aux = torch.cat((aux, x[it1, it2]))
-            new_x[it1, 0] = aux
+                newInstance = torch.cat((newInstance, x[it1, it2]))
+            new_x[it1, 0] = newInstance
         return new_x
 
 class Net(nn.Module):
-    def __init__(self, embedding_dim=300, knownEmbeddings=[], layersConfig=[], hiddenSize=256, dropOutRate=0.2):
+    def __init__(self, embedding_dim=300, knownEmbeddings=None, layersConfig=[], hiddenSize=256, dropOutRate=0.2):
         super(Net, self).__init__()
         self.embeddings = initEmbeddingLayer(knownEmbeddings, False)
         self.concatEmbed = concat()

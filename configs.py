@@ -24,7 +24,6 @@ dirs = {
     # 'standfordOutput': 'trashDirectory',
     'standfordOutput': 'standfordOutput',
     'modelOutput': 'modelOutput',
-    # 'modelOutput': 'modelSecondOutput',
 }
 
 config = {
@@ -46,6 +45,8 @@ config = {
     'momentum': 0.9,
     'weightDecay': 0.001,
     'hiddenSize': 256,
+    'usePretrainedEmbeddings': False,
+    'dropOutRatio': 0.0,
     'modelConfig': [{
             'inChan': 1,
             'outChan': 128,
@@ -57,7 +58,8 @@ config = {
         }],
 
     'logInterval': 50,
-    'modelBackupInterval': 500,
+    'logTestInterval': 20,
+    'modelBackupInterval': 900,
     'device': torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
 
 }
